@@ -10,3 +10,7 @@
 
 ### Compiling assets
 - `npm run dev`
+
+#### Credentials
+- `admin@gmail.com`
+- `password`
