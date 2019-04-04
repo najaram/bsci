@@ -94,4 +94,35 @@ class InvoiceControllerTest extends TestCase
         $this->assertEquals('updated example name', $data['data']['customer_name']);
         $this->assertEquals('updated example address', $data['data']['customer_address']);
     }
+
+    public function testView()
+    {
+        $invoice = factory(Invoice::class)->create([
+            'customer_name' => 'example name',
+            'customer_address' => 'example address'
+        ]);
+
+        $response = $this->actingAs(factory(User::class)->create())
+            ->get("/invoice/{$invoice->id}");
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'data' => [
+                'customer_name' => 'example name',
+                'customer_address' => 'example address'
+            ]
+        ]);
+    }
+
+    public function testViewList()
+    {
+        factory(Invoice::class, 2)->create();
+
+        $response = $this->actingAs(factory(User::class)->create())
+            ->get('/invoice');
+        $data = json_decode($response->getContent(), true);
+
+        $response->assertStatus(200);
+        $this->assertCount(2, $data['data']);
+    }
 }

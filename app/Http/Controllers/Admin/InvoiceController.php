@@ -40,14 +40,9 @@ class InvoiceController extends Controller
      */
     public function store(InvoiceRequest $request)
     {
-        $tax = $request->get('product_tax') / 100;
-        $itemCost = $request->get('product_price') + $tax;
-        $qtyPrice = $request->get('product_qty') * $itemCost;
-        $total = [
-            'total' => $request->get('payment_amount') - $qtyPrice,
-        ];
-
-        $invoice = Invoice::firstOrCreate(array_merge($request->all(), $total));
+        $invoice = Invoice::firstOrCreate(
+            array_merge($request->all(), $this->calculateTotal($request))
+        );
 
         return InvoiceResource::make($invoice);
     }
@@ -98,13 +93,7 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, Invoice $invoice)
     {
-        $tax = $request->get('product_tax') / 100;
-        $itemCost = $request->get('product_price') + $tax;
-        $qtyPrice = $request->get('product_qty') * $itemCost;
-        $total = [
-            'total' => $request->get('payment_amount') - $qtyPrice,
-        ];
-        $invoice->update(array_merge($request->all(), $total));
+        $invoice->update(array_merge($request->all(), $this->calculateTotal($request)));
 
         return InvoiceResource::make($invoice);
     }
@@ -117,5 +106,17 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice)
     {
         $invoice->delete();
+    }
+
+    private function calculateTotal(Request $request)
+    {
+        $tax = $request->get('product_tax') / 100;
+        $itemCost = $request->get('product_price') + $tax;
+        $qtyPrice = $request->get('product_qty') * $itemCost;
+        $total = [
+            'total' => $request->get('payment_amount') - $qtyPrice,
+        ];
+
+        return $total;
     }
 }
